@@ -15,16 +15,21 @@ import lombok.Setter;
 @Entity
 public class StorageBin {
 
-    @Id 
+    @Id
     @GeneratedValue
     private Long id;
 
     private String binCode;
     private int capacity;
 
+    // ── ADDED FOR WEEK 2 ──────────────────────────────────────────────────────
+    // Tracks how many units are currently stored in this bin.
+    // Used by the putaway algorithm to find available space.
+    private int currentQuantity;
+    // ─────────────────────────────────────────────────────────────────────────
+
     @ManyToOne
     @JoinColumn(name = "warehouse_id")
     @JsonBackReference
     private Warehouse warehouse;
 }
-

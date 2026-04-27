@@ -12,6 +12,23 @@ public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    // ── ADDED FOR WEEK 2 ──────────────────────────────────────────────────────
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<String> handleNotFound(ResourceNotFoundException ex) {
+        logger.error("Resource not found: {}", ex.getMessage());
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(NoBinAvailableException.class)
+    public ResponseEntity<String> handleNoBin(NoBinAvailableException ex) {
+        logger.error("No bin available: {}", ex.getMessage());
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Your existing catch-all — kept exactly as before
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception ex) {
         logger.error("Exception occurred: ", ex);
