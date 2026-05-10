@@ -2,17 +2,18 @@ package com.wms.wms.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.wms.wms.entity.StorageBin;
 import com.wms.wms.repository.StorageBinRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class StorageBinService {
 
-    @Autowired
-    private StorageBinRepository repo;
+    private final StorageBinRepository repo;
 
     public StorageBin create(StorageBin b) {
         return repo.save(b);
