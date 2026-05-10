@@ -40,6 +40,13 @@
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- ── Database
 		──────────────────────────────────────────────────────── -->
 
@@ -58,18 +65,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- ── ADDED FOR WEEK 2: Barcode / QR code generation (ZXing) ───────── -->
-
-		<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>core</artifactId>
-			<version>3.5.3</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>javase</artifactId>
-			<version>3.5.3</version>
-		</dependency>
 
 		<!-- ── Testing
 		───────────────────────────────────────────────────────── -->
@@ -83,13 +78,21 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<!-- In-memory DB for integration tests — no PostgreSQL needed locally -->
+		<!-- Source: https://mvnrepository.com/artifact/com.google.zxing/core -->
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>test</scope>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>3.3.3</version>
+			<scope>compile</scope>
 		</dependency>
+		<!-- Source: https://mvnrepository.com/artifact/com.google.zxing/javase -->
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>javase</artifactId>
+			<version>3.5.3</version>
+			<scope>compile</scope>
+		</dependency>
+
 
 	</dependencies>
 

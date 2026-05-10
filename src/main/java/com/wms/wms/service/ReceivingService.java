@@ -1,5 +1,11 @@
 package com.wms.wms.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.wms.wms.dto.ReceivingRequest;
 import com.wms.wms.dto.ReceivingResponse;
 import com.wms.wms.entity.InventoryItem;
@@ -11,12 +17,8 @@ import com.wms.wms.repository.InventoryItemRepository;
 import com.wms.wms.repository.ProductRepository;
 import com.wms.wms.repository.StorageBinRepository;
 import com.wms.wms.repository.WarehouseRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * ReceivingService — core Week 2 business logic.
@@ -35,24 +37,20 @@ import org.springframework.transaction.annotation.Transactional;
  * a bin's currentQuantity between the time we read it and when we commit.
  */
 @Service
+@RequiredArgsConstructor
 public class ReceivingService {
 
     private static final Logger logger = LoggerFactory.getLogger(ReceivingService.class);
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
-    @Autowired
-    private WarehouseRepository warehouseRepository;
+    private final WarehouseRepository warehouseRepository;
+    
+    private final StorageBinRepository storageBinRepository;
 
-    @Autowired
-    private StorageBinRepository storageBinRepository;
+    private final InventoryItemRepository inventoryItemRepository;
 
-    @Autowired
-    private InventoryItemRepository inventoryItemRepository;
-
-    @Autowired
-    private PutawayService putawayService;
+    private final PutawayService putawayService;
 
     /**
      * Process an inbound shipment as a single atomic database operation.

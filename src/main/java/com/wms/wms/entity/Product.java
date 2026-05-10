@@ -15,5 +15,8 @@ public class Product {
     private Long id;
 
     private String name;
+    
     private String sku;
+    
+    private String barcodePath;
 }
