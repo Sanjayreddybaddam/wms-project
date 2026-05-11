@@ -1,5 +1,6 @@
 package com.wms.wms.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -46,10 +47,18 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, Lo
         """)
     int totalStockForProduct(@Param("productId") Long productId,
                              @Param("warehouseId") Long warehouseId);
-    
-    
-    
+
+
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<InventoryItem> findByProduct(Product product);
     
+    Optional<InventoryItem> findByProductIdAndStorageBin_WarehouseId(
+    	    Long productId,
+    	    Long warehouseId
+    	);
+
+
+	List<InventoryItem> findByProductIdAndStorageBin_WarehouseIdOrderByIdAsc(Long productId, Long warehouseId);
+
 }

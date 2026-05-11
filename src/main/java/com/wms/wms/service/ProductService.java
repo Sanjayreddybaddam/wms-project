@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.wms.wms.dto.ProductResponseDTO;
 import com.wms.wms.entity.Product;
 import com.wms.wms.repository.ProductRepository;
 import com.wms.wms.util.QRCodeGenerator;
@@ -14,29 +15,64 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductService {
 
-    
     private final ProductRepository repo;
 
-    // ✅ CREATE PRODUCT + GENERATE QR
-    public Product create(Product p) {
+    // ✅ CREATE PRODUCT + QR GENERATION
+    public ProductResponseDTO create(Product p) {
 
-        // Step 1: Save product first (to get ID if needed)
-        Product savedProduct = repo.save(p);
+        Product saved = repo.save(p);
 
-        // Step 2: Generate QR using SKU
-        String filePath = "src/main/resources/static/barcodes/" + savedProduct.getSku() + ".png";
-        
-        String savedPath = QRCodeGenerator.generateQRCode(savedProduct.getSku(), filePath);
-        
-        
+        try {
+            String filePath = System.getProperty("user.dir")
+                    + "/barcodes/" + saved.getSku() + ".png";
 
-        // Step 3: Save QR path
-        savedProduct.setBarcodePath(savedPath);
+            String qrPath = QRCodeGenerator.generateQRCode(saved.getSku(), filePath);
 
-        return repo.save(savedProduct);
+            saved.setBarcodePath(qrPath);
+
+            saved = repo.save(saved);
+
+        } catch (Exception e) {
+            throw new RuntimeException("QR generation failed", e);
+        }
+
+        return mapToDTO(saved);
     }
 
-    public List<Product> getAll() {
-        return repo.findAll();
+    // ✅ GET ALL PRODUCTS
+    public List<ProductResponseDTO> getAll() {
+
+        return repo.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+    // ✅ UPDATE PRODUCT
+    public ProductResponseDTO update(Long id, Product updated) {
+
+        Product existing = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        existing.setName(updated.getName());
+        existing.setSku(updated.getSku());
+
+        Product saved = repo.save(existing);
+
+        return mapToDTO(saved);
+    }
+
+    // ✅ DELETE PRODUCT
+    public void delete(Long id) {
+        repo.deleteById(id);
+    }
+
+    // ✅ DTO MAPPER
+    public ProductResponseDTO mapToDTO(Product product) {
+        return new ProductResponseDTO(
+                product.getId(),
+                product.getName(),
+                product.getSku()
+        );
     }
 }

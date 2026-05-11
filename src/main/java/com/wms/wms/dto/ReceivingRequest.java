@@ -24,5 +24,5 @@ public class ReceivingRequest {
 
     private String supplierReference; // optional PO / shipment ref
 
-  
+
 }

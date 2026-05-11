@@ -6,14 +6,13 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.wms.wms.dto.OrderItemDTO;
+import com.wms.wms.dto.OrderItemResponseDTO;
 import com.wms.wms.dto.OrderRequestDTO;
-import com.wms.wms.entity.InventoryItem;
+import com.wms.wms.dto.OrderResponseDTO;
 import com.wms.wms.entity.Order;
 import com.wms.wms.entity.OrderItem;
 import com.wms.wms.entity.Product;
 import com.wms.wms.enums.OrderStatus;
-import com.wms.wms.exception.InsufficientStockException;
-import com.wms.wms.repository.InventoryItemRepository;
 import com.wms.wms.repository.OrderRepository;
 import com.wms.wms.repository.ProductRepository;
 
@@ -24,19 +23,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrderService {
 
+	private final InventoryService inventoryService;
+	
     private final OrderRepository orderRepository;
-    
+
     private final ProductRepository productRepository;
-    
-    private final InventoryItemRepository inventoryRepository;
-    
+
     @Transactional
     public Order createOrder(OrderRequestDTO request) {
-    	
+
     	Order order = new Order();
 
         List<OrderItem> items = new ArrayList<>();
-        
+
 
         for (OrderItemDTO dto : request.getItems()) {
 
@@ -46,13 +45,13 @@ public class OrderService {
             OrderItem item = new OrderItem();
             item.setProduct(product);
             item.setQuantity(dto.getQuantity());
-            
+
             item.setOrder(order);
 
             items.add(item);
         }
 
-       
+
         order.setItems(items);
         order.setStatus(OrderStatus.PENDING);
 
@@ -65,32 +64,37 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        // ❌ Prevent duplicate deduction
-        if (order.getStatus() == newStatus) {
-            throw new RuntimeException("Order already in status: " + newStatus);
-        }
-
-        // ✅ Strict transition validation
         validateTransition(order.getStatus(), newStatus);
 
-        // 🔥 CRITICAL: Deduct stock only once when moving to PACKED
+        Long warehouseId = order.getWarehouse().getId(); // OR order.getWarehouseId()
+
+        // STEP 1: STOCK CHECK
+        if (newStatus == OrderStatus.PICKING) {
+
+            for (OrderItem item : order.getItems()) {
+
+                int stock = inventoryService.getTotalStock(
+                        item.getProduct().getId(),
+                        warehouseId
+                );
+
+                if (stock < item.getQuantity()) {
+                    throw new RuntimeException(
+                            "Insufficient stock for product: " + item.getProduct().getName()
+                    );
+                }
+            }
+        }
+
+        // STEP 2: DEDUCT STOCK
         if (newStatus == OrderStatus.PACKED) {
 
             for (OrderItem item : order.getItems()) {
 
-                // 🔒 LOCK the row to prevent race conditions
-                InventoryItem inventory = inventoryRepository
-                        .findByProduct(item.getProduct())
-                        .orElseThrow(() -> new RuntimeException("Inventory not found"));
-
-                if (inventory.getQuantity() < item.getQuantity()) {
-                    throw new InsufficientStockException(
-                        "Not enough stock for product: " + item.getProduct().getName()
-                    );
-                }
-
-                inventory.setQuantity(
-                        inventory.getQuantity() - item.getQuantity()
+                inventoryService.deductStock(
+                        item.getProduct().getId(),
+                        warehouseId,   // 🔥 IMPORTANT FIX
+                        item.getQuantity()
                 );
             }
         }
@@ -126,4 +130,31 @@ public class OrderService {
                 throw new RuntimeException("Cannot change status after SHIPPED");
         }
     }
+    
+    public OrderResponseDTO mapToDTO(Order order) {
+
+        List<OrderItemResponseDTO> items = order.getItems().stream()
+                .map(i -> new OrderItemResponseDTO(
+                        i.getProduct().getId(),
+                        i.getProduct().getName(),
+                        i.getQuantity()
+                ))
+                .toList();
+
+        OrderResponseDTO dto = new OrderResponseDTO();
+        dto.setId(order.getId());
+        dto.setStatus(order.getStatus().name());
+        dto.setItems(items);
+
+        return dto;
+    }
+
+    public List<OrderResponseDTO> getAllOrders() {
+
+        return orderRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+    
 }

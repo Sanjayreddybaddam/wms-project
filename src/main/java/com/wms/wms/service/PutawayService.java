@@ -17,7 +17,7 @@ public class PutawayService {
 
     private final StorageBinRepository binRepository;
 
-    
+
 
     /**
      * Select the best bin for the given quantity in the given warehouse.

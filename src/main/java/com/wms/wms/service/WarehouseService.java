@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WarehouseService {
 
-    
+
     private final WarehouseRepository repo;
 
     public Warehouse create(Warehouse w) {

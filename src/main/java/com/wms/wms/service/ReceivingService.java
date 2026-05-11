@@ -45,7 +45,7 @@ public class ReceivingService {
     private final ProductRepository productRepository;
 
     private final WarehouseRepository warehouseRepository;
-    
+
     private final StorageBinRepository storageBinRepository;
 
     private final InventoryItemRepository inventoryItemRepository;

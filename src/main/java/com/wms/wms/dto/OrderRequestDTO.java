@@ -6,5 +6,6 @@ import lombok.Data;
 
 @Data
 public class OrderRequestDTO {
+	
     private List<OrderItemDTO> items;
 }
