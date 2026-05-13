@@ -6,6 +6,13 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ProductRequestDTO {
+	
     private String name;
     private String sku;
+    private Integer stock;
+    private String barcodePath;
+    private double price;
+    
+    
+    
 }

@@ -4,7 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize; // ✅ add this
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,13 +31,16 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    // 👷 OPERATOR + ADMIN → CREATE ORDER
+    // OPERATOR / ADMIN → CREATE ORDER (ITEM BASED)
     @PreAuthorize("hasAnyRole('ADMIN','OPERATOR')")
-    @PostMapping
+    @PostMapping("/place")
     public ResponseEntity<ApiResponse<OrderResponseDTO>> createOrder(
-            @RequestBody OrderRequestDTO request) {
+            @RequestBody OrderRequestDTO request,
+            Authentication authentication) {
 
-        Order saved = orderService.createOrder(request);
+        String username = authentication.getName();
+
+        Order saved = orderService.createOrder(request, username);
 
         return ResponseEntity.ok(
                 new ApiResponse<>(
@@ -47,7 +51,7 @@ public class OrderController {
         );
     }
 
-    // 👨‍💼 ADMIN → UPDATE STATUS ONLY
+    // ADMIN → UPDATE STATUS
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/status")
     public ResponseEntity<ApiResponse<String>> updateStatus(
@@ -65,7 +69,7 @@ public class OrderController {
         );
     }
 
-    // 👨‍💼 ADMIN → ALL ORDERS
+    // ADMIN → ALL ORDERS
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<OrderResponseDTO>>> getAllOrders() {
@@ -74,6 +78,23 @@ public class OrderController {
                 new ApiResponse<>(
                         "Orders fetched",
                         orderService.getAllOrders(),
+                        LocalDateTime.now()
+                )
+        );
+    }
+
+    // OPERATOR → MY ORDERS
+    @PreAuthorize("hasAnyRole('ADMIN','OPERATOR')")
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponse<List<OrderResponseDTO>>> getMyOrders(
+            Authentication authentication) {
+
+        String username = authentication.getName();
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        "My orders fetched",
+                        orderService.getOrdersByUser(username),
                         LocalDateTime.now()
                 )
         );

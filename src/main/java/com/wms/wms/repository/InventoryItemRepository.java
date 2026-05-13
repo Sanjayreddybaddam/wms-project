@@ -4,16 +4,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.wms.wms.entity.InventoryItem;
-import com.wms.wms.entity.Product;
-
-import jakarta.persistence.LockModeType;
 
 @Repository
 public interface InventoryItemRepository extends JpaRepository<InventoryItem, Long> {
@@ -50,8 +46,7 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, Lo
 
 
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<InventoryItem> findByProduct(Product product);
+    
     
     Optional<InventoryItem> findByProductIdAndStorageBin_WarehouseId(
     	    Long productId,

@@ -1,8 +1,9 @@
 package com.wms.wms.enums;
 
 public enum OrderStatus {
-    PENDING,
+    CREATED,
     PICKING,
     PACKED,
-    SHIPPED
+    DISPATCHED,
+    DELIVERED
 }

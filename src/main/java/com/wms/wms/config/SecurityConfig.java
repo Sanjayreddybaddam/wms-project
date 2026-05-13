@@ -31,11 +31,12 @@ public class SecurityConfig {
 	            .requestMatchers("/auth/**").permitAll()
 
 	            // ADMIN ONLY
-	            .requestMatchers("/api/products/**").hasRole("ADMIN")
+	            //.requestMatchers("/api/products/**").hasRole("ADMIN")
 	            .requestMatchers("/api/warehouses/**").hasRole("ADMIN")
 
 	            // OPERATOR + ADMIN
 	            .requestMatchers("/api/orders/**").hasAnyRole("ADMIN", "OPERATOR")
+	            .requestMatchers("/api/products/**").hasAnyRole("ADMIN","OPERATOR")
 
 	            // everything else
 	            .anyRequest().authenticated()

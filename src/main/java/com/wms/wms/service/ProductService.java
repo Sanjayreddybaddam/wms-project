@@ -17,13 +17,17 @@ public class ProductService {
 
     private final ProductRepository repo;
 
-    // ✅ CREATE PRODUCT + QR GENERATION
+    // CREATE PRODUCT + QR GENERATION
     public ProductResponseDTO create(Product p) {
+
+        if (p.getStock()==null) {
+            throw new RuntimeException("Stock is required while creating product");
+        }
 
         Product saved = repo.save(p);
 
         try {
-            String filePath = System.getProperty("user.dir")
+            String filePath = System.getProperty("src/main/resources/static")
                     + "/barcodes/" + saved.getSku() + ".png";
 
             String qrPath = QRCodeGenerator.generateQRCode(saved.getSku(), filePath);
@@ -39,16 +43,15 @@ public class ProductService {
         return mapToDTO(saved);
     }
 
-    // ✅ GET ALL PRODUCTS
+    // GET ALL PRODUCTS
     public List<ProductResponseDTO> getAll() {
-
         return repo.findAll()
                 .stream()
                 .map(this::mapToDTO)
                 .toList();
     }
 
-    // ✅ UPDATE PRODUCT
+    // UPDATE PRODUCT (INCLUDING STOCK FIX)
     public ProductResponseDTO update(Long id, Product updated) {
 
         Product existing = repo.findById(id)
@@ -57,22 +60,29 @@ public class ProductService {
         existing.setName(updated.getName());
         existing.setSku(updated.getSku());
 
+        // ✅ IMPORTANT: allow stock update
+        existing.setStock(updated.getStock());
+        existing.setPrice(updated.getPrice());
+        existing.setStock(updated.getStock());
+
         Product saved = repo.save(existing);
+        
 
         return mapToDTO(saved);
     }
 
-    // ✅ DELETE PRODUCT
     public void delete(Long id) {
         repo.deleteById(id);
     }
 
-    // ✅ DTO MAPPER
     public ProductResponseDTO mapToDTO(Product product) {
         return new ProductResponseDTO(
                 product.getId(),
                 product.getName(),
-                product.getSku()
+                product.getSku(),
+                product.getStock(),
+                product.getBarcodePath(),
+                product.getPrice()
         );
     }
 }

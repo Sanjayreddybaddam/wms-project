@@ -2,6 +2,8 @@ package com.wms.wms.dto;
 
 import java.util.List;
 
+import com.wms.wms.enums.OrderStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +14,6 @@ import lombok.NoArgsConstructor;
 public class OrderResponseDTO {
 	
     private Long id;
-    private String status;
+    private OrderStatus status;
     private List<OrderItemResponseDTO> items;
 }

@@ -3,6 +3,7 @@ package com.wms.wms.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,4 +24,10 @@ public class Product {
     private String sku;
 
     private String barcodePath;
+    
+    @Min(value = 1, message = "Price must be greater than 0")
+    private double price;
+
+    @Min(value = 0, message = "Stock cannot be negative")
+    private Integer stock;
 }
