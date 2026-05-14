@@ -1,12 +1,21 @@
 package com.wms.wms.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.wms.wms.dto.ProductResponseDTO;
+import com.wms.wms.entity.InventoryItem;
 import com.wms.wms.entity.Product;
+import com.wms.wms.entity.StorageBin;
+import com.wms.wms.repository.InventoryItemRepository;
+import com.wms.wms.repository.OrderItemRepository;
 import com.wms.wms.repository.ProductRepository;
+import com.wms.wms.repository.StorageBinRepository;
+import com.wms.wms.repository.UserRepository;
 import com.wms.wms.util.QRCodeGenerator;
 
 import lombok.RequiredArgsConstructor;
@@ -15,74 +24,125 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductService {
 
-    private final ProductRepository repo;
+    private final InventoryItemRepository inventoryItemRepository;
+    private final ProductRepository productRepository;
+    private final StorageBinRepository storageBinRepository;
+    private final UserRepository userRepository;
+    private final OrderItemRepository orderItemRepository;
 
-    // CREATE PRODUCT + QR GENERATION
-    public ProductResponseDTO create(Product p) {
+    // =========================
+    // CREATE PRODUCT
+    // =========================
+    @Transactional
+    public ProductResponseDTO create(Product p, Integer initialStock, Long storageBinId) {
 
-        if (p.getStock()==null) {
-            throw new RuntimeException("Stock is required while creating product");
-        }
-
-        Product saved = repo.save(p);
+        Product saved = productRepository.save(p);
 
         try {
-            String filePath = System.getProperty("src/main/resources/static")
-                    + "/barcodes/" + saved.getSku() + ".png";
-
+            String filePath = "src/main/resources/static/barcodes/" + saved.getSku() + ".png";
             String qrPath = QRCodeGenerator.generateQRCode(saved.getSku(), filePath);
 
             saved.setBarcodePath(qrPath);
-
-            saved = repo.save(saved);
+            saved = productRepository.save(saved);
 
         } catch (Exception e) {
             throw new RuntimeException("QR generation failed", e);
         }
 
-        return mapToDTO(saved);
+        // ✅ SAFE FETCH OF BIN (FIXED)
+        StorageBin bin = storageBinRepository.findById(storageBinId)
+                .orElseThrow(() -> new RuntimeException("Storage bin not found"));
+
+        // check if inventory already exists
+        InventoryItem existing = inventoryItemRepository
+                .findByProductIdAndStorageBinId(saved.getId(), storageBinId)
+                .orElse(null);
+
+        if (existing != null) {
+            existing.setQuantity(existing.getQuantity() + initialStock);
+            inventoryItemRepository.save(existing);
+        } else {
+            InventoryItem item = new InventoryItem();
+            item.setProduct(saved);
+            item.setStorageBin(bin);
+            item.setQuantity(initialStock);
+
+            inventoryItemRepository.save(item);
+        }
+
+        return mapToDTO(saved, initialStock);
     }
 
-    // GET ALL PRODUCTS
-    public List<ProductResponseDTO> getAll() {
-        return repo.findAll()
-                .stream()
-                .map(this::mapToDTO)
+    // =========================
+    // GET PRODUCTS WITH STOCK
+    // =========================
+    public List<ProductResponseDTO> getProducts(Long warehouseId) {
+
+    	List<Product> products = productRepository.findByActiveTrue();
+
+        List<Object[]> stockData =
+                inventoryItemRepository.getStockByWarehouse(warehouseId);
+
+        Map<Long, Integer> stockMap = new HashMap<>();
+
+        for (Object[] row : stockData) {
+            Long productId = (Long) row[0];
+            Integer stock = ((Number) row[1]).intValue();
+            stockMap.put(productId, stock);
+        }
+
+        return products.stream()
+                .map(p -> mapToDTO(p, stockMap.getOrDefault(p.getId(), 0)))
                 .toList();
     }
 
-    // UPDATE PRODUCT (INCLUDING STOCK FIX)
+    // =========================
+    // UPDATE PRODUCT
+    // =========================
     public ProductResponseDTO update(Long id, Product updated) {
 
-        Product existing = repo.findById(id)
+        Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
         existing.setName(updated.getName());
         existing.setSku(updated.getSku());
-
-        // ✅ IMPORTANT: allow stock update
-        existing.setStock(updated.getStock());
         existing.setPrice(updated.getPrice());
-        existing.setStock(updated.getStock());
 
-        Product saved = repo.save(existing);
-        
+        Product saved = productRepository.save(existing);
 
-        return mapToDTO(saved);
+        return mapToDTO(saved, 0);
     }
 
+    // =========================
+    // DELETE PRODUCT (SOFT DELETE)
+    // =========================
+    @Transactional
     public void delete(Long id) {
-        repo.deleteById(id);
+
+        orderItemRepository.deleteByProductId(id);
+        inventoryItemRepository.deleteByProductId(id);
+
+        productRepository.deleteById(id);
     }
 
-    public ProductResponseDTO mapToDTO(Product product) {
+    // =========================
+    // DTO MAPPER
+    // =========================
+    public ProductResponseDTO mapToDTO(Product product, Integer stock) {
         return new ProductResponseDTO(
                 product.getId(),
                 product.getName(),
                 product.getSku(),
-                product.getStock(),
+                stock,
                 product.getBarcodePath(),
                 product.getPrice()
         );
+    }
+
+    public Long getWarehouseIdByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+                .getWarehouse()
+                .getId();
     }
 }

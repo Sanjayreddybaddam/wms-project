@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wms.wms.dto.ApiResponse;
+import com.wms.wms.dto.WarehouseResponseDTO;
 import com.wms.wms.entity.Warehouse;
 import com.wms.wms.service.WarehouseService;
 
@@ -39,16 +40,14 @@ public class WarehouseController {
                 ));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getAll() {
-
-        List<Warehouse> list = service.getAll();
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<WarehouseResponseDTO>>> getAll() {
 
         return ResponseEntity.ok(
                 new ApiResponse<>(
                         "Warehouses fetched successfully",
-                        list,
+                        service.getAll(),
                         LocalDateTime.now()
                 )
         );

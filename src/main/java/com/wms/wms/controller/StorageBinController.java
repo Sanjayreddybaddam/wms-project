@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wms.wms.dto.ApiResponse;
-import com.wms.wms.entity.StorageBin;
+import com.wms.wms.dto.StorageBinRequestDTO;
+import com.wms.wms.dto.StorageBinResponseDTO;
 import com.wms.wms.service.StorageBinService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,30 +26,27 @@ public class StorageBinController {
 
     private final StorageBinService service;
     
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<ApiResponse<StorageBin>> create(@RequestBody StorageBin b) {
-
-        StorageBin saved = service.create(b);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<StorageBinResponseDTO>> create(
+            @RequestBody StorageBinRequestDTO dto) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(
                         "Storage bin created successfully",
-                        saved,
+                        service.create(dto),
                         LocalDateTime.now()
                 ));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<StorageBin>>> getAll() {
-
-        List<StorageBin> list = service.getAll();
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<StorageBinResponseDTO>>> getAll() {
 
         return ResponseEntity.ok(
                 new ApiResponse<>(
                         "Storage bins fetched successfully",
-                        list,
+                        service.getAll(),
                         LocalDateTime.now()
                 )
         );

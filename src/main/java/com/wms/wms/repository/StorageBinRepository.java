@@ -45,4 +45,9 @@ public interface StorageBinRepository extends JpaRepository<StorageBin, Long> {
           AND b.currentQuantity > 0
         """)
     long countOccupiedBins(@Param("warehouseId") Long warehouseId);
+
+    List<StorageBin> findByWarehouseId(Long warehouseId);
 }
+
+
+

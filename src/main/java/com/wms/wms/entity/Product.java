@@ -28,6 +28,8 @@ public class Product {
     @Min(value = 1, message = "Price must be greater than 0")
     private double price;
 
-    @Min(value = 0, message = "Stock cannot be negative")
-    private Integer stock;
+	private boolean active = true;
+
+//    @Min(value = 0, message = "Stock cannot be negative")
+//    private Integer stock;
 }

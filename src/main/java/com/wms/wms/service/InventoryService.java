@@ -44,7 +44,7 @@ public class InventoryService {
             int deduct = Math.min(available, remaining);
 
             item.setQuantity(available - deduct);
-            inventoryRepository.save(item);
+            
 
             remaining -= deduct;
         }

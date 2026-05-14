@@ -125,7 +125,7 @@ public class OrderService {
 
     // ✅ GET BY USER
     public List<OrderResponseDTO> getOrdersByUser(String username) {
-        return orderRepository.findByUserUsername(username)
+        return orderRepository.findOrdersWithItems(username)
                 .stream()
                 .map(this::mapToDTO)
                 .toList();

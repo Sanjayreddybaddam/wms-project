@@ -9,7 +9,7 @@ public class ProductRequestDTO {
 	
     private String name;
     private String sku;
-    private Integer stock;
+    //private Integer stock;
     private String barcodePath;
     private double price;
     
