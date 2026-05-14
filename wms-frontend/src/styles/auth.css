@@ -1,0 +1,77 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+}
+
+/* center layout */
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* card */
+.auth-box {
+  width: 350px;
+  padding: 30px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* title */
+.auth-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* labels */
+label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* inputs */
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: 0.2s;
+}
+
+input:focus, select:focus {
+  border-color: #ff9900; /* Amazon orange */
+  outline: none;
+}
+
+/* button */
+.primary-btn {
+  width: 100%;
+  padding: 10px;
+  background: #ffd814;
+  border: 1px solid #fcd200;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.primary-btn:hover {
+  background: #f7ca00;
+}
+
+/* footer */
+.auth-footer {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+/* error */
+.error-text {
+  color: red;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
